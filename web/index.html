@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Lightbox Studio</title>
+  <meta name="description" content="Compose printable illuminated artwork with complete control over every layer.">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <div><span class="mark">L</span><strong>Lightbox Studio</strong><small>browser prototype</small></div>
+    <div class="view-switch" role="group" aria-label="Canvas view">
+      <button data-view="stack" class="active">Stack</button>
+      <button data-view="layer">Selected layer</button>
+      <button data-view="backlit">Backlit</button>
+    </div>
+    <div id="sync-status" class="status">Ready</div>
+  </header>
+  <main>
+    <aside class="sources-panel">
+      <p class="eyebrow">SOURCE IMAGES</p>
+      <h2>Build from anything</h2>
+      <p class="muted">Add transparent PNGs or photos, then place each image independently.</p>
+      <label class="upload">+ Add images<input id="image-input" type="file" accept="image/png,image/jpeg,image/webp" multiple></label>
+      <div class="project-files"><button id="save-project">Save project</button><label>Open project<input id="open-project" type="file" accept=".lbox,application/zip"></label></div>
+      <div id="sources" class="source-list"></div>
+    </aside>
+    <section class="workspace">
+      <div class="workspace-meta">
+        <div class="tool-palette" role="toolbar" aria-label="Editing tools">
+          <button data-tool="transform" class="active">Transform</button><button data-tool="brush">Brush</button><button data-tool="wand">Wand</button><button data-tool="crop">Crop</button><button data-tool="pen">Pen</button>
+        </div>
+        <div class="history-controls"><button id="undo" title="Undo">↶</button><button id="redo" title="Redo">↷</button></div>
+        <span id="canvas-size">180 × 120 mm</span>
+      </div>
+      <div id="tool-options">
+        <label>Mode <select id="paint-mode"><option value="add">Add</option><option value="erase">Erase</option></select></label>
+        <label>Size <input id="brush-size" type="range" min="2" max="80" value="18"></label>
+        <label>Wand <input id="wand-sensitivity" type="range" min="0" max="100" value="20"></label>
+        <span id="tool-help">Drag a piece to move it. Drag its corner to resize.</span>
+      </div>
+      <div id="stage-wrap"><div id="stage" aria-label="Composition canvas"><img id="python-preview" alt="Python backlit preview"><svg id="pen-preview" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg><div class="empty"><b>Your composition starts here</b><span>Add an image to the selected layer.</span></div></div></div>
+      <div id="layers" class="layer-strip" aria-label="Layers"></div>
+    </section>
+    <aside class="inspector">
+      <p class="eyebrow">TRANSFORM</p>
+      <h2 id="selection-title">No piece selected</h2>
+      <div id="transform-controls" class="controls disabled">
+        <label>X <input data-field="x" type="number" step="0.01"></label>
+        <label>Y <input data-field="y" type="number" step="0.01"></label>
+        <label>Width <input data-field="width" type="number" step="0.01" min="0.01"></label>
+        <label>Height <input data-field="height" type="number" step="0.01" min="0.01"></label>
+        <label class="wide">Rotation <input data-field="rotation" type="range" min="-180" max="180" step="1"><output id="rotation-value">0°</output></label>
+        <label class="wide">Transmission <input data-field="opacity" type="range" min="0.05" max="1" step="0.05"></label>
+        <label class="wide">Move to layer <select id="piece-layer"></select></label>
+        <div class="wide piece-actions"><button id="duplicate-piece">Duplicate</button><button id="delete-piece">Delete</button></div>
+      </div>
+      <div class="layer-settings">
+        <p class="eyebrow">LAYER MATERIAL</p>
+        <label>Behavior <select id="layer-mode"><option value="hybrid">Hybrid</option><option value="lithophane">Lithophane</option><option value="silhouette">Silhouette</option></select></label>
+        <label>Minimum mm <input id="minimum-mm" type="number" min="0.1" max="10" step="0.1"></label>
+        <label>Maximum mm <input id="maximum-mm" type="number" min="0.1" max="20" step="0.1"></label>
+        <label>Gamma <input id="layer-gamma" type="number" min="0.05" max="10" step="0.05"></label>
+        <label>Attenuation <input id="layer-attenuation" type="number" min="0.01" max="20" step="0.05"></label>
+        <label class="check"><input id="layer-invert" type="checkbox"> Invert thickness</label>
+      </div>
+      <div class="project-size">
+        <p class="eyebrow">OUTPUT SIZE</p>
+        <label>Width mm <input id="width-mm" type="number" min="20" max="1000" value="180"></label>
+        <label>Height mm <input id="height-mm" type="number" min="20" max="1000" value="120"></label>
+      </div>
+      <button id="validate" class="primary">Sync with Python</button>
+      <button id="export" class="secondary">Export STL / 3MF</button>
+      <p class="muted small">This confirms that the browser document can be consumed by the Python processing service.</p>
+    </aside>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

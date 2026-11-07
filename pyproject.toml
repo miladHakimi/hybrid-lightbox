@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hybrid-lightbox"
+version = "0.2.0"
+description = "Offline hybrid lithophane and shadow-box designer"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26", "Pillow>=10.0", "PySide6-Essentials>=6.7"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "playwright>=1.52"]
+ai = ["torch>=2.4", "torchvision>=0.19", "transformers>=4.57"]
+hq-ai = ["torch>=2.4", "torchvision>=0.19", "transformers>=4.57", "HQ-SAM-2 @ https://github.com/SysCV/sam-hq/archive/refs/heads/main.zip#subdirectory=sam-hq2"]
+
+[project.scripts]
+hybrid-lightbox = "lightbox.app:main"
+lightbox-cli = "lightbox.cli:main"
+lightbox-web = "lightbox.web:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
