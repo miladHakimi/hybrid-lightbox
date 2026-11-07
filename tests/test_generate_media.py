@@ -1,12 +1,30 @@
+import os
+import subprocess
+import sys
+import textwrap
+
 from PIL import Image
 
-from scripts.generate_media import generate_media
 from scripts.make_sample import make_sample
 
 
 def test_generate_media_creates_screenshots_and_animated_gif(tmp_path):
     sample = make_sample(tmp_path / "sample.png")
-    paths = generate_media(sample, tmp_path / "media")
+    output = tmp_path / "media"
+    script = textwrap.dedent(
+        f"""
+        import os
+        from pathlib import Path
+        from scripts.generate_media import generate_media
+
+        generate_media(Path({str(sample)!r}), Path({str(output)!r}))
+        os._exit(0)
+        """
+    )
+    environment = {**os.environ, "QT_QPA_PLATFORM": "offscreen"}
+    result = subprocess.run([sys.executable, "-c", script], env=environment)
+    assert result.returncode == 0
+    paths = sorted(output.iterdir())
 
     assert [path.name for path in paths] == [
         "01-import.png",

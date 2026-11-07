@@ -1,5 +1,9 @@
 import ast
+import os
 from pathlib import Path
+import subprocess
+import sys
+import textwrap
 
 import pytest
 
@@ -76,19 +80,20 @@ def test_full_mask_action_selects_the_entire_current_layer():
     assert "Selected mask" in implementation
 
 
-def test_main_image_and_illustration_share_a_resizable_horizontal_splitter(monkeypatch):
-    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+def test_main_image_and_illustration_share_a_resizable_horizontal_splitter():
     pytest.importorskip("PySide6")
-    from PySide6.QtCore import Qt
-    from PySide6.QtWidgets import QApplication
-    from lightbox.app import MainWindow
+    script = textwrap.dedent(
+        """
+        import os
+        from PySide6.QtCore import Qt
+        from PySide6.QtWidgets import QApplication
+        from lightbox.app import MainWindow
 
-    app = QApplication.instance() or QApplication([])
-    monkeypatch.setattr(MainWindow, "_restore_session", lambda self: None)
-    window = MainWindow()
-    window.show()
-    app.processEvents()
-    try:
+        app = QApplication([])
+        MainWindow._restore_session = lambda self: None
+        window = MainWindow()
+        window.show()
+        app.processEvents()
         splitter = window.preview_splitter
         assert splitter.orientation() == Qt.Horizontal
         assert splitter.count() == 2
@@ -96,12 +101,15 @@ def test_main_image_and_illustration_share_a_resizable_horizontal_splitter(monke
         assert splitter.widget(0).isAncestorOf(window.canvas_stack)
         assert splitter.widget(1).isAncestorOf(window.illustration)
         assert not splitter.childrenCollapsible()
-
         before = splitter.sizes()
         splitter.setSizes([before[0] // 2, before[1] + before[0] // 2])
         app.processEvents()
         after = splitter.sizes()
         assert after[0] < before[0]
         assert after[1] > before[1]
-    finally:
-        window.close()
+        os._exit(0)
+        """
+    )
+    environment = {**os.environ, "QT_QPA_PLATFORM": "offscreen"}
+    result = subprocess.run([sys.executable, "-c", script], env=environment)
+    assert result.returncode == 0
