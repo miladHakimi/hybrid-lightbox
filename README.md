@@ -4,14 +4,24 @@ An offline macOS-first Phase 1 prototype for turning an image into three aligned
 
 ![Hybrid Lightbox Designer workflow](docs/media/workflow.gif)
 
-<p align="center">
-  <img src="docs/media/editor-source.png" alt="The desktop editor with the original demonstration image" width="49%">
-  <img src="docs/media/editor-layers.png" alt="The desktop editor showing the selected printable layer mask" width="49%">
-</p>
-
-### Backlit preview
-
-![Backlit transmission preview](docs/media/backlit-preview.png)
+<table>
+  <tr>
+    <td><strong>1. Import</strong><br><img src="docs/media/01-import.png" alt="Source image imported into the desktop editor"></td>
+    <td><strong>2. Review segmentation</strong><br><img src="docs/media/02-segmentation-review.png" alt="Colored object segments ready for review"></td>
+  </tr>
+  <tr>
+    <td><strong>3. Inspect depth</strong><br><img src="docs/media/03-depth-map.png" alt="Locally generated relative depth map"></td>
+    <td><strong>4. Assign layers</strong><br><img src="docs/media/04-layer-assignment.png" alt="Segments assigned to printable layers"></td>
+  </tr>
+  <tr>
+    <td><strong>5. Refine masks</strong><br><img src="docs/media/05-mask-editing.png" alt="Selected layer mask ready for brush refinement"></td>
+    <td><strong>6. Review structure</strong><br><img src="docs/media/06-structure-review.png" alt="Connector and printable structure review"></td>
+  </tr>
+  <tr>
+    <td><strong>7. Preview backlight</strong><br><img src="docs/media/07-backlit-preview.png" alt="Simulated backlit transmission preview"></td>
+    <td><strong>8. Validate and export</strong><br><img src="docs/media/08-export-ready.png" alt="Validated design ready for STL and 3MF export"></td>
+  </tr>
+</table>
 
 ## What works
 
