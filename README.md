@@ -2,6 +2,17 @@
 
 An offline macOS-first Phase 1 prototype for turning an image into three aligned hybrid lithophane/shadow-box STL layers. The image pipeline, optics, geometry, persistence, CLI, and Qt UI are separate modules.
 
+![Hybrid Lightbox Designer workflow](docs/media/workflow.gif)
+
+<p align="center">
+  <img src="docs/media/editor-source.png" alt="The desktop editor with the original demonstration image" width="49%">
+  <img src="docs/media/editor-layers.png" alt="The desktop editor showing the selected printable layer mask" width="49%">
+</p>
+
+### Backlit preview
+
+![Backlit transmission preview](docs/media/backlit-preview.png)
+
 ## What works
 
 - JPEG, PNG, and WebP import at up to 768 px with two or more deterministic starter layers.

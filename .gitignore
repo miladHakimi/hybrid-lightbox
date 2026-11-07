@@ -20,3 +20,6 @@ test_runs/
 *.webp
 !samples/
 !samples/sample.png
+!docs/media/
+!docs/media/*.png
+!docs/media/*.gif
