@@ -6,7 +6,7 @@ from lightbox.model import Project, Layer, LayerMode, Material, SourceImage, lum
 from lightbox.optics import (OPTIMIZER_NOZZLE_DIAMETER_MM, thickness_map,
                              combined_transmission, optimize_rear_openings,
                              layer_thickness, nozzle_resolved_values, preview_u8)
-from lightbox.geometry import voxel_surface, is_watertight, connected_components, write_ascii_stl, write_binary_stl, write_3mf, add_frame_and_bridges, add_hidden_bridges, remove_small_features, smooth_print_data
+from lightbox.geometry import voxel_surface, is_watertight, connected_components, write_ascii_stl, write_binary_stl, add_frame_and_bridges, add_hidden_bridges, remove_small_features, smooth_print_data
 from lightbox.cli import DEFAULT_CONNECTOR_DEPTH_MM, DEFAULT_STL_DIMENSIONS_MM, discover_images, export, generate_one, mesh_inputs, parse_points, reinforce_connectors, reinforce_frame, scale_mesh_to_dimensions
 from lightbox.ai import SAM_MODELS, LocalAI, assign_depth_layers, assign_prompted_layers, apply_ai_decomposition, filter_segments, normalize_depth, select_ai_device
 from lightbox.view import ConnectorCache, automatic_view, brush_cursor_diameter, connector_masks, connector_view_preview, image_view_preview, source_image_preview, supports_drag_paint, valid_segment_indices, view_for_tool
@@ -596,42 +596,6 @@ def test_mesh_is_watertight_and_reimports(tmp_path):
     assert binary.stat().st_size==84+50*len(triangles)
 
 
-def test_write_3mf_packages_named_aligned_mesh_objects(tmp_path):
-    from zipfile import ZipFile
-    from xml.etree import ElementTree
-    first=np.array([[[0,0,0],[1,0,0],[0,1,0]]],np.float32)
-    second=first+np.array([0,0,2],np.float32)
-    path=tmp_path/"model.3mf";write_3mf(path,[first,second],["front","rear"])
-    with ZipFile(path) as package:
-        assert set(package.namelist())=={"[Content_Types].xml","_rels/.rels","3D/3dmodel.model"}
-        root=ElementTree.fromstring(package.read("3D/3dmodel.model"))
-    ns={"m":"http://schemas.microsoft.com/3dmanufacturing/core/2015/02"}
-    objects=root.findall("m:resources/m:object",ns)
-    assert [item.attrib["name"] for item in objects]==["front","rear","model"]
-    assert [item.attrib["objectid"] for item in objects[2].findall("m:components/m:component",ns)]==["1","2"]
-    build_items=root.findall("m:build/m:item",ns)
-    assert len(build_items)==1
-    assert build_items[0].attrib["objectid"]=="3"
-    rear_z=[float(item.attrib["z"]) for item in objects[1].findall("m:mesh/m:vertices/m:vertex",ns)]
-    assert rear_z==[2.0,2.0,2.0]
-
-
-def test_write_3mf_keeps_fine_first_layer_geometry_in_assembly(tmp_path):
-    from zipfile import ZipFile
-    from xml.etree import ElementTree
-    fine=np.array([[[0,0,0],[.12,0,0],[0,.12,0]]],np.float32)
-    covering=np.array([[[0,0,.4],[1,0,.4],[0,1,.4]]],np.float32)
-    path=tmp_path/"fine.3mf";write_3mf(path,[fine,covering],["ring","background"])
-    with ZipFile(path) as package:
-        root=ElementTree.fromstring(package.read("3D/3dmodel.model"))
-    ns={"m":"http://schemas.microsoft.com/3dmanufacturing/core/2015/02"}
-    objects=root.findall("m:resources/m:object",ns)
-    ring_vertices=objects[0].findall("m:mesh/m:vertices/m:vertex",ns)
-    ring_xy=sorted((float(v.attrib["x"]),float(v.attrib["y"])) for v in ring_vertices)
-    assert np.allclose(ring_xy,sorted([(0,0),(.12,0),(0,.12)]))
-    assert [c.attrib["objectid"] for c in objects[-1].findall("m:components/m:component",ns)]==["1","2"]
-
-
 def test_project_roundtrip(tmp_path):
     p=project();p.print_smoothing_mm=.7; path=tmp_path/"x.hbox"; p.save(path); q=Project.load(path)
     assert q.width_mm==p.width_mm and np.array_equal(q.image,p.image)
@@ -639,13 +603,13 @@ def test_project_roundtrip(tmp_path):
     assert all(np.array_equal(a.mask,b.mask) for a,b in zip(p.layers,q.layers))
 
 
-def test_stl_export_also_saves_reloadable_project(tmp_path):
+def test_stl_export_saves_reloadable_project_without_3mf(tmp_path):
     p=project(); paths=export(p,tmp_path)
     saved=Project.load(tmp_path/"project.hbox")
     assert len(paths)==len(p.layers)
     assert saved.width_mm==p.width_mm
     assert all(np.array_equal(a.mask,b.mask) for a,b in zip(p.layers,saved.layers))
-    assert (tmp_path/"model.3mf").is_file()
+    assert not (tmp_path/"model.3mf").exists()
 
 
 def test_stl_export_does_not_require_watertight_meshes(tmp_path,monkeypatch):
@@ -729,8 +693,9 @@ def test_cli_folder_discovery_and_report(tmp_path):
     (source/"ignore.txt").write_text("not an image")
     assert discover_images(source)==[source/"one.png"]
     report=generate_one(source/"one.png",tmp_path/"output",80,True)
-    assert report["valid"] and len(report["exports"])==4
-    assert report["exports"][-1].endswith("model.3mf")
+    assert report["valid"] and len(report["exports"])==3
+    assert all(path.endswith(".stl") for path in report["exports"])
+    assert not (tmp_path/"output"/"model.3mf").exists()
     assert (tmp_path/"output"/"report.json").exists()
 
 

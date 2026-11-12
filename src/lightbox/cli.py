@@ -8,7 +8,7 @@ from PIL import Image
 from .model import Project
 from .optics import (OPTIMIZER_NOZZLE_DIAMETER_MM, combined_transmission,
                      layer_thickness, optimize_rear_openings, preview_u8)
-from .geometry import (voxel_surface, write_binary_stl, write_3mf, is_watertight,
+from .geometry import (voxel_surface, write_binary_stl, is_watertight,
                        add_frame_and_bridges, add_hidden_bridges, connected_components,
                        remove_small_features, smooth_print_data)
 
@@ -79,7 +79,7 @@ def reinforce_connectors(base_mask: np.ndarray, structural_mask: np.ndarray,
 def export(project: Project, output: Path, minimum_feature_area_mm2: float = 0.0,
            maximum_hole_area_mm2: float = 0.0,
            dimensions_mm: tuple[float,float,float] | None = None) -> list[Path]:
-    output.mkdir(parents=True, exist_ok=True); paths=[];structural_masks=[];meshes=[]
+    output.mkdir(parents=True, exist_ok=True); paths=[];structural_masks=[]
     project.save(output / "project.hbox")
     cleaned_masks=[remove_small_features(project.output_mask(i),project.pixel_mm,minimum_feature_area_mm2,maximum_hole_area_mm2)
                    for i, layer in enumerate(project.layers)]
@@ -114,9 +114,7 @@ def export(project: Project, output: Path, minimum_feature_area_mm2: float = 0.0
         if dimensions_mm is not None:
             tris=scale_mesh_to_dimensions(tris,*dimensions_mm)
         path=output/f"layer_{i+1}.stl"; write_binary_stl(path,tris,f"layer_{i+1}"); paths.append(path)
-        meshes.append(tris)
         structural_masks.append(mask)
-    write_3mf(output/"model.3mf",meshes,[f"layer_{i+1}" for i in range(len(meshes))])
     Image.fromarray(preview_u8(project)).save(output/"backlit_preview.png")
     for i, source_mask in enumerate(physical_masks):
         Image.fromarray((source_mask.astype(np.uint8) * 255)).save(output/f"layer_{i+1}_mask.png")
@@ -220,7 +218,7 @@ def generate_one(image: Path, output: Path, width: float, optimize: bool,
     output.mkdir(parents=True, exist_ok=True)
     paths = export(project, output, minimum_feature_area, maximum_hole_area); report = inspect(project, minimum_feature_area, maximum_hole_area)
     report.update({"source": str(image), "output": str(output), "decomposition": backend, "rear_pixels_opened": opened,
-                   "exports": [str(path) for path in paths]+[str(output/"model.3mf")]})
+                   "exports": [str(path) for path in paths]})
     (output / "report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     return report
 

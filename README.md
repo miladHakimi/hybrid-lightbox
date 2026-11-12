@@ -19,7 +19,7 @@ An offline macOS-first Phase 1 prototype for turning an image into three aligned
   </tr>
   <tr>
     <td><strong>7. Preview backlight</strong><br><img src="docs/media/07-backlit-preview.png" alt="Simulated backlit transmission preview"></td>
-    <td><strong>8. Validate and export</strong><br><img src="docs/media/08-export-ready.png" alt="Validated design ready for STL and 3MF export"></td>
+    <td><strong>8. Validate and export</strong><br><img src="docs/media/08-export-ready.png" alt="Validated design ready for STL export"></td>
   </tr>
 </table>
 
@@ -37,7 +37,7 @@ An offline macOS-first Phase 1 prototype for turning an image into three aligned
 - Transmission preview using `T = exp(-sum(mu_i * t_i))`.
 - Editable `.hbox` projects (a documented ZIP container with JSON, PNG, and NumPy masks).
 - Automatic workspace recovery after restarting the app, plus explicit Save, Load, New, and Reset actions.
-- One aligned, millimetre-scaled binary STL per layer, a combined multi-object 3MF model, and a PNG backlight preview. Watertightness is reported as a diagnostic but does not block export.
+- One aligned, millimetre-scaled binary STL per layer and a PNG backlight preview. Watertightness is reported as a diagnostic but does not block export.
 - Occlusion-aware bridges connect islands using short printable paths that preferentially sit behind foreground silhouettes. Optional solid-backing and legacy bridge modes remain available.
 - Every layer has a reinforced 1 mm outer border that is 3 mm thick by default.
 - Print smoothing rounds noisy mask/segment boundaries and softens abrupt thickness changes before STL generation (0.3 mm by default, with 0.1 mm thickness quantization).
@@ -91,7 +91,7 @@ python scripts/make_sample.py
 lightbox-cli generate samples/sample.png --optimize -o demo_output
 ```
 
-The output contains `layer_1.stl` through `layer_3.stl`, a combined `model.3mf` with each layer as a separate aligned object, `backlit_preview.png`, and `project.hbox`.
+The output contains `layer_1.stl` through `layer_3.stl`, `backlit_preview.png`, and `project.hbox`.
 
 Inspect an image without writing geometry, or recursively test a customer folder:
 

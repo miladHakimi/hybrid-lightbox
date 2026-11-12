@@ -662,7 +662,7 @@ class MainWindow(QMainWindow):
         if dimensions.exec()!=QDialog.Accepted:return
         path=QFileDialog.getExistingDirectory(self,"Export aligned STL layers")
         if path:
-            try: paths=export(self.project,Path(path),dimensions_mm=dimensions.dimensions()); QMessageBox.information(self,"Export complete",f"Exported {len(paths)} STL files and model.3mf at {dimensions.width.value():g} × {dimensions.height.value():g} × {dimensions.depth.value():g} mm, plus a backlit preview and project.hbox.")
+            try: paths=export(self.project,Path(path),dimensions_mm=dimensions.dimensions()); QMessageBox.information(self,"Export complete",f"Exported {len(paths)} STL files at {dimensions.width.value():g} × {dimensions.height.value():g} × {dimensions.depth.value():g} mm, plus a backlit preview and project.hbox.")
             except Exception as exc: QMessageBox.critical(self,"Export failed",str(exc))
     def refresh_controls(self,row):
         # The layer strip contains a final "Add layer" tile.  It can briefly

@@ -3,8 +3,6 @@ from pathlib import Path
 import math
 import struct
 import heapq
-from zipfile import ZIP_DEFLATED, ZipFile
-from xml.etree.ElementTree import Element, SubElement, tostring
 import numpy as np
 
 
@@ -67,46 +65,6 @@ def write_binary_stl(path: str | Path, triangles: np.ndarray, name: str = "layer
     header=(f"Hybrid Lightbox {name}".encode("ascii")[:80]).ljust(80,b"\0")
     with open(path,"wb") as f:
         f.write(header);f.write(struct.pack("<I",len(triangles)));records.tofile(f)
-
-
-def write_3mf(path: str | Path, meshes, names=None) -> None:
-    """Write aligned triangle meshes as separate objects in a 3MF package."""
-    meshes=[np.asarray(mesh,dtype=np.float32) for mesh in meshes]
-    names=list(names) if names is not None else [f"layer_{i+1}" for i in range(len(meshes))]
-    if len(names)!=len(meshes):raise ValueError("Every 3MF mesh must have a name")
-    namespace="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
-    model=Element("model",{"xmlns":namespace,"unit":"millimeter","xml:lang":"en-US"})
-    resources=SubElement(model,"resources");build=SubElement(model,"build")
-    for object_id,(triangles,name) in enumerate(zip(meshes,names),1):
-        if triangles.ndim!=3 or triangles.shape[1:]!=(3,3):raise ValueError("3MF meshes must have shape (n, 3, 3)")
-        obj=SubElement(resources,"object",{"id":str(object_id),"type":"model","name":str(name)})
-        mesh=SubElement(obj,"mesh");vertices=SubElement(mesh,"vertices");faces=SubElement(mesh,"triangles")
-        unique,index=np.unique(triangles.reshape(-1,3),axis=0,return_inverse=True)
-        for x,y,z in unique:SubElement(vertices,"vertex",{"x":f"{x:.9g}","y":f"{y:.9g}","z":f"{z:.9g}"})
-        for v1,v2,v3 in index.reshape(-1,3):SubElement(faces,"triangle",{"v1":str(v1),"v2":str(v2),"v3":str(v3)})
-    # Aligned material layers are parts of one printable object, not separate
-    # build items occupying the same coordinates.  Slicers such as Bambu
-    # Studio otherwise treat the layers as overlapping models and may hide or
-    # repair away fine geometry in an earlier layer.
-    assembly_id=len(meshes)+1
-    assembly=SubElement(resources,"object",{"id":str(assembly_id),"type":"model","name":"model"})
-    components=SubElement(assembly,"components")
-    for object_id in range(1,assembly_id):
-        SubElement(components,"component",{"objectid":str(object_id)})
-    SubElement(build,"item",{"objectid":str(assembly_id)})
-    content_types=b'''<?xml version="1.0" encoding="UTF-8"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-  <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/>
-</Types>'''
-    relationships=b'''<?xml version="1.0" encoding="UTF-8"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>
-</Relationships>'''
-    with ZipFile(path,"w",ZIP_DEFLATED) as package:
-        package.writestr("[Content_Types].xml",content_types)
-        package.writestr("_rels/.rels",relationships)
-        package.writestr("3D/3dmodel.model",b'<?xml version="1.0" encoding="UTF-8"?>'+tostring(model,encoding="utf-8"))
 
 
 def connected_components(mask: np.ndarray) -> list[np.ndarray]:

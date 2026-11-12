@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
 authors = [{ name = "Milad Hakimi" }]
-keywords = ["3d-printing", "lithophane", "shadow-box", "stl", "3mf"]
+keywords = ["3d-printing", "lithophane", "shadow-box", "stl"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Operating System :: MacOS",
